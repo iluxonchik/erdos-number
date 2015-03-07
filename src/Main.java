@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -80,4 +79,14 @@ class GraphFromInputBuilder {
 		}
 		return g;
 	}
+}
+
+class ErdosNumberComputer {
+	Graph g;
+	boolean nodeVisted[]; // true - node already visited; false - node not yet visited
+	int predecessor[]; // predecessor of node, indexed by node number
+	int distanceTo[]; // distance from node v (index) to the source node
+	
+	LinkedList<Integer> erdosNumbers; // list of erdos numbers on each level
+	int maxLevel;
 }
