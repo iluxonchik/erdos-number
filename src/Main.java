@@ -81,12 +81,22 @@ class GraphFromInputBuilder {
 	}
 }
 
-class ErdosNumberComputer {
+class ErdosNumber {
 	Graph g;
-	boolean nodeVisted[]; // true - node already visited; false - node not yet visited
+	boolean nodeVisited[]; // true - node already visited; false - node not yet visited
 	int predecessor[]; // predecessor of node, indexed by node number
 	int distanceTo[]; // distance from node v (index) to the source node
+	int source; // source node for bfs
 	
-	LinkedList<Integer> erdosNumbers; // list of erdos numbers on each level
-	int maxLevel;
+	LinkedList<Integer> erdosNumbers; // list of Erdos numbers on each level starting from 1
+	int maxLevel; // max Erdos Number
+	
+	public ErdosNumber(Graph g, int source) {
+		this.g = g;
+		this.source = source;
+		erdosNumbers = new LinkedList<Integer>();
+		nodeVisited = new boolean[g.getV()];
+		predecessor = new int[g.getV()];
+		distanceTo = new int[g.getV()];
+	}
 }
