@@ -1,4 +1,6 @@
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 
 
@@ -6,7 +8,10 @@ public class Main {
 
 	public static void main(String[] args) {
 		Graph g = GraphFromInputBuilder.build();
-		System.out.println("V: " + g.getV() + " E: " + g.getE());
+		//System.out.println("V: " + g.getV() + " E: " + g.getE());
+		ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
+		en.bfs();
+		en.printOutput();
 	}
 }
 
@@ -63,7 +68,7 @@ class Graph {
 
 class GraphFromInputBuilder {
 	
-	private static int source = -1;
+	public static int source = 0;
 	
 	public static Graph build() {
 		Graph g;
@@ -77,26 +82,71 @@ class GraphFromInputBuilder {
 		while(sc.hasNextInt()) {
 			g.addEdge(sc.nextInt() - 1, sc.nextInt() - 1);
 		}
+		sc.close();
 		return g;
 	}
 }
 
 class ErdosNumber {
-	Graph g;
-	boolean nodeVisited[]; // true - node already visited; false - node not yet visited
-	int predecessor[]; // predecessor of node, indexed by node number
-	int distanceTo[]; // distance from node v (index) to the source node
-	int source; // source node for bfs
+	private Graph g;
+	private boolean nodeVisited[]; // true - node already visited; false - node not yet visited
+	private int predecessor[]; // predecessor of node, indexed by node number
+	private int distanceTo[]; // distance from node v (index) to the source node
+	private int source; // source node for bfs
+	private Queue<Integer> queue;
 	
-	LinkedList<Integer> erdosNumbers; // list of Erdos numbers on each level starting from 1
-	int maxLevel; // max Erdos Number
+	private int numNodesAtDist[]; // number of nodes at distance i from the source (where i is the index)
+	private int maxDist; // max Erdos Number
 	
 	public ErdosNumber(Graph g, int source) {
 		this.g = g;
 		this.source = source;
-		erdosNumbers = new LinkedList<Integer>();
+		numNodesAtDist = new int[g.getV()];
 		nodeVisited = new boolean[g.getV()];
 		predecessor = new int[g.getV()];
 		distanceTo = new int[g.getV()];
+	}
+	
+	public void bfs(Graph g, int source) {		
+		queue = new LinkedList<Integer>();
+		
+		// TODO: initialise the distanceTo array with infinity?
+		// Projects specifications seem to say that all of the nodes
+		// have a finite distance. Not doing this saves Theta(V).
+		
+		distanceTo[source] = 0;
+		nodeVisited[source] = true;
+		queue.add(source);
+		maxDist = 0;
+		
+		while (queue.peek() != null) {
+			int u = queue.remove();
+			// Test if current distance is the largest so far
+			if (distanceTo[u] > maxDist) {
+				maxDist = distanceTo[u];
+			}
+			numNodesAtDist[distanceTo[u]]++;
+			for (int v : g.getAdj(u)) {
+				if (!nodeVisited[v]) {
+					queue.add(v);
+					nodeVisited[v] = true;
+					predecessor[v] = u;
+					distanceTo[v] = distanceTo[u] + 1;
+				}
+			}
+		}
+	}
+	
+	public void bfs() {
+		this.bfs(g, source);
+	}
+	
+	
+	public void printOutput() {
+		System.out.println(maxDist);
+		
+		for (int i = 1; i <= maxDist; i++) {
+			System.out.println(numNodesAtDist[i]);
+		}
 	}
 }
