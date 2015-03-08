@@ -17,6 +17,10 @@ public class Main {
 		ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
 		en.bfs();
 		en.printOutput();
+		
+		//char[] buff = new char[20];
+		//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		//GraphFromInputBuilder.readLine(buff, br);
 	}
 }
 
@@ -82,53 +86,64 @@ class GraphFromInputBuilder{
 		int len;
 		int index;
 		
+		int charRead;
+		char[] buff = new char[20];
+		
 		
 		Graph g;
-		String line;
 
 		BufferedReader br;
 		br = new BufferedReader(new InputStreamReader(System.in));
-		line = br.readLine();
 		
-		len = line.length();
+		charRead = readLine(buff, br);
+		
+		len = charRead;
 		index = len - 1;
-		while (index > 0 && line.charAt(index) != ' ') {
-			char c = line.charAt(index);
-			y += (c - '0') * pow[len - index - 1];
+		while (index > 0 && buff[index] != ' ') {
+			y += (buff[index] - '0') * pow[len - index - 1];
 			index--;
 		}
 
 		len = index;
 		index--;
 		while (index >= 0) {
-			char c = line.charAt(index);
-			x += (c - '0') * pow[len - index - 1];
+			x += (buff[index] - '0') * pow[len - index - 1];
 			index--;
 		}
 		
 		g = new Graph(x);
 		g.setE(y);
+
+		charRead = readLine(buff, br);
 		
-		source = Integer.parseInt(br.readLine()) - 1;
+		x = 0;
+		len = charRead;
+		index = len -1;
+		while (index >= 0) {
+			x += (buff[index] - '0') * pow[len - index - 1];
+			index--;
+		}
 		
-		while((line = br.readLine()) != null) {
+		
+		source = x - 1;
+	
+		
+		while((charRead = readLine(buff, br)) != -1 ) {
 			
 			x = 0;
 			y = 0;
 			
-			len = line.length();
+			len = charRead;
 			index = len - 1;
-			while (index > 0 && line.charAt(index) != ' ') {
-				char c = line.charAt(index);
-				y += (c - '0') * pow[len - index - 1];
+			while (index > 0 && buff[index] != ' ') {
+				y += (buff[index] - '0') * pow[len - index - 1];
 				index--;
 			}
 
 			len = index;
 			index--;
 			while (index >= 0) {
-				char c = line.charAt(index);
-				x += (c - '0') * pow[len - index - 1];
+				x += (buff[index] - '0') * pow[len - index - 1];
 				index--;
 			}
 			
@@ -136,6 +151,27 @@ class GraphFromInputBuilder{
 		}
 		br.close();
 		return g;
+	}
+	
+	public static int readLine(char[] buff, BufferedReader br) throws IOException{
+		int index = 0;
+		int charRead;
+		int firstChar;
+		
+		firstChar = br.read();
+
+		if (firstChar == -1)
+			return -1;
+		
+		buff[index] = (char)firstChar;
+		charRead = 1;
+		
+		while(buff[index] != '\n') {
+			index += charRead;
+			charRead = br.read(buff, index, 1);
+		}
+		return index;
+		
 	}
 }
 
@@ -201,4 +237,5 @@ class ErdosNumber {
 			System.out.println(nodesAtDistance.get(i));
 		}
 	}
+	
 }
