@@ -97,7 +97,6 @@ class GraphFromInputBuilder{
 class ErdosNumber {
 	private Graph g;
 	private boolean nodeVisited[]; // true - node already visited; false - node not yet visited
-	private int predecessor[]; // predecessor of node, indexed by node number
 	private int distanceTo[]; // distance from node v (index) to the source node
 	private int source; // source node for bfs
 	private Queue<Integer> queue;
@@ -110,7 +109,6 @@ class ErdosNumber {
 		this.source = source;
 		nodesAtDistance = new HashMap<Integer, Integer>();
 		nodeVisited = new boolean[g.getV()];
-		predecessor = new int[g.getV()];
 		distanceTo = new int[g.getV()];
 	}
 	
@@ -142,7 +140,6 @@ class ErdosNumber {
 				if (!nodeVisited[v]) {
 					queue.add(v);
 					nodeVisited[v] = true;
-					predecessor[v] = u;
 					distanceTo[v] = distanceTo[u] + 1;
 				}
 			}
