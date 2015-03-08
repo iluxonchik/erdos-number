@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -9,6 +11,7 @@ import java.util.Queue;
 public class Main {
 
 	public static void main(String[] args)  throws IOException {
+		//System.setIn(new FileInputStream("in.txt"));
 		Graph g = GraphFromInputBuilder.build();
 		//System.out.println("V: " + g.getV() + " E: " + g.getE());
 		ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
@@ -73,21 +76,63 @@ class GraphFromInputBuilder{
 	public static int source = 0;
 	
 	public static Graph build() throws IOException {
+		final int[] pow = new int[] { 1, 10, 100, 1000, 10000, 100000 };
+		int x = 0;
+		int y = 0;
+		int len;
+		int index;
+		
+		
 		Graph g;
-		String rawLine;
-		String[] line;
+		String line;
+
 		BufferedReader br;
-		//Scanner sc = new Scanner(System.in);
 		br = new BufferedReader(new InputStreamReader(System.in));
-		line = br.readLine().split(" ");
-		g = new Graph(Integer.parseInt(line[0]));
-		g.setE(Integer.parseInt(line[0]));
+		line = br.readLine();
+		
+		len = line.length();
+		index = len - 1;
+		while (index > 0 && line.charAt(index) != ' ') {
+			char c = line.charAt(index);
+			y += (c - '0') * pow[len - index - 1];
+			index--;
+		}
+
+		len = index;
+		index--;
+		while (index >= 0) {
+			char c = line.charAt(index);
+			x += (c - '0') * pow[len - index - 1];
+			index--;
+		}
+		
+		g = new Graph(x);
+		g.setE(y);
 		
 		source = Integer.parseInt(br.readLine()) - 1;
 		
-		while((rawLine = br.readLine()) != null) {
-			line = rawLine.split(" ");
-			g.addEdge(Integer.parseInt(line[0]) - 1, Integer.parseInt(line[1]) - 1);
+		while((line = br.readLine()) != null) {
+			
+			x = 0;
+			y = 0;
+			
+			len = line.length();
+			index = len - 1;
+			while (index > 0 && line.charAt(index) != ' ') {
+				char c = line.charAt(index);
+				y += (c - '0') * pow[len - index - 1];
+				index--;
+			}
+
+			len = index;
+			index--;
+			while (index >= 0) {
+				char c = line.charAt(index);
+				x += (c - '0') * pow[len - index - 1];
+				index--;
+			}
+			
+			g.addEdge(x - 1, y - 1);
 		}
 		br.close();
 		return g;
@@ -99,10 +144,11 @@ class ErdosNumber {
 	private boolean nodeVisited[]; // true - node already visited; false - node not yet visited
 	private int distanceTo[]; // distance from node v (index) to the source node
 	private int source; // source node for bfs
-	private Queue<Integer> queue;
+	private ArrayDeque<Integer> queue;
 	private HashMap<Integer, Integer> nodesAtDistance;
 	
 	private int maxDist; // max Erdos Number
+	private int currNode;
 	
 	public ErdosNumber(Graph g, int source) {
 		this.g = g;
@@ -113,7 +159,7 @@ class ErdosNumber {
 	}
 	
 	public void bfs(Graph g, int source) {		
-		queue = new LinkedList<Integer>();
+		queue = new ArrayDeque<Integer>();
 		
 		// TODO: initialise the distanceTo array with infinity?
 		// Projects specifications seem to say that all of the nodes
@@ -123,33 +169,30 @@ class ErdosNumber {
 		nodeVisited[source] = true;
 		queue.add(source);
 		maxDist = 0;
+		currNode = 0;
 		
 		while (queue.peek() != null) {
-			int u = queue.remove();
-			// Test if current distance is the largest so far
-			if (distanceTo[u] > maxDist) {
-				maxDist = distanceTo[u];
-			}
-			
-			if (nodesAtDistance.get(distanceTo[u]) == null)
-				nodesAtDistance.put(distanceTo[u], 1);
+			currNode = queue.remove();
+			if (nodesAtDistance.get(distanceTo[currNode]) == null)
+				nodesAtDistance.put(distanceTo[currNode], 1);
 			else
-				nodesAtDistance.put(distanceTo[u], nodesAtDistance.get(distanceTo[u]) + 1);
+				nodesAtDistance.put(distanceTo[currNode], nodesAtDistance.get(distanceTo[currNode]) + 1);
 			//numNodesAtDist[distanceTo[u]]++;
-			for (int v : g.getAdj(u)) {
+			for (int v : g.getAdj(currNode)) {
 				if (!nodeVisited[v]) {
 					queue.add(v);
 					nodeVisited[v] = true;
-					distanceTo[v] = distanceTo[u] + 1;
+					distanceTo[v] = distanceTo[currNode] + 1;
 				}
 			}
 		}
+		maxDist = distanceTo[currNode];
 	}
 	
 	public void bfs() {
 		this.bfs(g, source);
 	}
-	
+	 
 	
 	public void printOutput() {
 		System.out.println(maxDist);
@@ -159,3 +202,4 @@ class ErdosNumber {
 		}
 	}
 }
+
