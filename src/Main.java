@@ -1,12 +1,14 @@
-import java.util.Iterator;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Scanner;
 
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args)  throws IOException {
 		Graph g = GraphFromInputBuilder.build();
 		//System.out.println("V: " + g.getV() + " E: " + g.getE());
 		ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
@@ -66,23 +68,28 @@ class Graph {
 	public int getV() { return this.V; }
 }
 
-class GraphFromInputBuilder {
+class GraphFromInputBuilder{
 	
 	public static int source = 0;
 	
-	public static Graph build() {
+	public static Graph build() throws IOException {
 		Graph g;
-		Scanner sc = new Scanner(System.in);
+		String rawLine;
+		String[] line;
+		BufferedReader br;
+		//Scanner sc = new Scanner(System.in);
+		br = new BufferedReader(new InputStreamReader(System.in));
+		line = br.readLine().split(" ");
+		g = new Graph(Integer.parseInt(line[0]));
+		g.setE(Integer.parseInt(line[0]));
 		
-		g = new Graph(sc.nextInt());
-		g.setE(sc.nextInt());
+		source = Integer.parseInt(br.readLine()) - 1;
 		
-		source = sc.nextInt() - 1;
-		
-		while(sc.hasNextInt()) {
-			g.addEdge(sc.nextInt() - 1, sc.nextInt() - 1);
+		while((rawLine = br.readLine()) != null) {
+			line = rawLine.split(" ");
+			g.addEdge(Integer.parseInt(line[0]) - 1, Integer.parseInt(line[1]) - 1);
 		}
-		sc.close();
+		br.close();
 		return g;
 	}
 }
@@ -94,14 +101,14 @@ class ErdosNumber {
 	private int distanceTo[]; // distance from node v (index) to the source node
 	private int source; // source node for bfs
 	private Queue<Integer> queue;
+	private HashMap<Integer, Integer> nodesAtDistance;
 	
-	private int numNodesAtDist[]; // number of nodes at distance i from the source (where i is the index)
 	private int maxDist; // max Erdos Number
 	
 	public ErdosNumber(Graph g, int source) {
 		this.g = g;
 		this.source = source;
-		numNodesAtDist = new int[g.getV()];
+		nodesAtDistance = new HashMap<Integer, Integer>();
 		nodeVisited = new boolean[g.getV()];
 		predecessor = new int[g.getV()];
 		distanceTo = new int[g.getV()];
@@ -125,7 +132,12 @@ class ErdosNumber {
 			if (distanceTo[u] > maxDist) {
 				maxDist = distanceTo[u];
 			}
-			numNodesAtDist[distanceTo[u]]++;
+			
+			if (nodesAtDistance.get(distanceTo[u]) == null)
+				nodesAtDistance.put(distanceTo[u], 1);
+			else
+				nodesAtDistance.put(distanceTo[u], nodesAtDistance.get(distanceTo[u]) + 1);
+			//numNodesAtDist[distanceTo[u]]++;
 			for (int v : g.getAdj(u)) {
 				if (!nodeVisited[v]) {
 					queue.add(v);
@@ -146,7 +158,7 @@ class ErdosNumber {
 		System.out.println(maxDist);
 		
 		for (int i = 1; i <= maxDist; i++) {
-			System.out.println(numNodesAtDist[i]);
+			System.out.println(nodesAtDistance.get(i));
 		}
 	}
 }
