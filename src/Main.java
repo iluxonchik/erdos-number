@@ -171,7 +171,7 @@ class ErdosNumber {
 		maxDist = 0;
 		currNode = 0;
 		
-		while (queue.peek() != null) {
+		while (!queue.isEmpty()) {
 			currNode = queue.remove();
 			if (nodesAtDistance.get(distanceTo[currNode]) == null)
 				nodesAtDistance.put(distanceTo[currNode], 1);
@@ -202,4 +202,3 @@ class ErdosNumber {
 		}
 	}
 }
-
