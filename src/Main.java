@@ -12,50 +12,53 @@ public class Main {
 
 	public static void main(String[] args)  throws IOException {
 		
-		long startTime;
-		long endTime;
-		long duration;
-		
-		long gb;
-		long bfs;
-		long print;
-		
-		startTime = System.nanoTime();
+			
+			long startTime;
+			long endTime;
+			long duration;
+			
+			long gb;
+			long bfs;
+			long print;
+			
+			startTime = System.nanoTime();
+
+			
+			
+			//System.setIn(new FileInputStream("in.txt"));
+			Graph g = GraphFromInputBuilder.build();
+			
+			endTime = System.nanoTime();
+			duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+			gb = duration; 
+			
+			
+			//System.out.println("V: " + g.getV() + " E: " + g.getE());
+			ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
+			startTime = System.nanoTime();
+			en.bfs();
+			
+			endTime = System.nanoTime();
+			duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+			
+			bfs=duration;
+			
+			startTime = System.nanoTime();
+			//en.printOutput();
+			endTime = System.nanoTime();
+			duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+			print = duration;
+			
+			System.out.println("Graph building duration: " + gb/1000000);
+			System.out.println("BFS duration: " + bfs/1000000);
+			System.out.println("OUT PRINT duration: " + duration/1000000);
+
+			//char[] buff = new char[20];
+			//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			//GraphFromInputBuilder.readLine(buff, br);
 
 		
 		
-		//System.setIn(new FileInputStream("in.txt"));
-		Graph g = GraphFromInputBuilder.build();
-		
-		endTime = System.nanoTime();
-		duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-		gb = duration; 
-		
-		
-		//System.out.println("V: " + g.getV() + " E: " + g.getE());
-		ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
-		startTime = System.nanoTime();
-		en.bfs();
-		
-		endTime = System.nanoTime();
-		duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-		System.out.println("BFS duration: " + duration);
-		
-		bfs=duration;
-		
-		startTime = System.nanoTime();
-		en.printOutput();
-		endTime = System.nanoTime();
-		duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-		print = duration;
-		
-		System.out.println("Graph building duration: " + gb/1000000);
-		System.out.println("BFS duration: " + bfs/1000000);
-		System.out.println("OUT PRINT duration: " + duration/1000000);
-
-		//char[] buff = new char[20];
-		//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		//GraphFromInputBuilder.readLine(buff, br);
 	}
 }
 
@@ -115,59 +118,70 @@ class GraphFromInputBuilder{
 	public static int source = 0;
 	
 	public static Graph build() throws IOException {
-		final int[] pow = new int[] { 1, 10, 100, 1000, 10000, 100000 };
+		final int[] pow = new int[] { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 };
 		int x = 0;
 		int y = 0;
 		int len;
 		int index;
 		
+		int charRead;
+		char[] buff = new char[20];
+		
 		
 		Graph g;
-		String line;
 
 		BufferedReader br;
 		br = new BufferedReader(new InputStreamReader(System.in));
-		line = br.readLine();
 		
-		len = line.length();
+		charRead = readLine(buff, br);
+		
+		len = charRead;
 		index = len - 1;
-		while (index > 0 && line.charAt(index) != ' ') {
-			char c = line.charAt(index);
-			y += (c - '0') * pow[len - index - 1];
+		while (index > 0 && buff[index] != ' ') {
+			y += (buff[index] - '0') * pow[len - index - 1];
 			index--;
 		}
 
 		len = index;
 		index--;
 		while (index >= 0) {
-			char c = line.charAt(index);
-			x += (c - '0') * pow[len - index - 1];
+			x += (buff[index] - '0') * pow[len - index - 1];
 			index--;
 		}
 		
 		g = new Graph(x);
 		g.setE(y);
+
+		charRead = readLine(buff, br);
 		
-		source = Integer.parseInt(br.readLine()) - 1;
+		x = 0;
+		len = charRead;
+		index = len -1;
+		while (index >= 0) {
+			x += (buff[index] - '0') * pow[len - index - 1];
+			index--;
+		}
 		
-		while((line = br.readLine()) != null) {
+		
+		source = x - 1;
+	
+		
+		while((charRead = readLine(buff, br)) != -1 ) {
 			
 			x = 0;
 			y = 0;
 			
-			len = line.length();
+			len = charRead;
 			index = len - 1;
-			while (index > 0 && line.charAt(index) != ' ') {
-				char c = line.charAt(index);
-				y += (c - '0') * pow[len - index - 1];
+			while (index > 0 && buff[index] != ' ') {
+				y += (buff[index] - '0') * pow[len - index - 1];
 				index--;
 			}
 
 			len = index;
 			index--;
 			while (index >= 0) {
-				char c = line.charAt(index);
-				x += (c - '0') * pow[len - index - 1];
+				x += (buff[index] - '0') * pow[len - index - 1];
 				index--;
 			}
 			
@@ -175,6 +189,27 @@ class GraphFromInputBuilder{
 		}
 		br.close();
 		return g;
+	}
+	
+	public static int readLine(char[] buff, BufferedReader br) throws IOException{
+		int index = 0;
+		int charRead;
+		int firstChar;
+		
+		firstChar = br.read();
+
+		if (firstChar == -1)
+			return -1;
+		
+		buff[index] = (char)firstChar;
+		charRead = 1;
+		
+		while(buff[index] != '\n') {
+			index += charRead;
+			charRead = br.read(buff, index, 1);
+		}
+		return index;
+		
 	}
 }
 
@@ -240,4 +275,5 @@ class ErdosNumber {
 			System.out.println(nodesAtDistance.get(i));
 		}
 	}
+	
 }
