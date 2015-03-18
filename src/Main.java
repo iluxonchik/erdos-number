@@ -1,64 +1,30 @@
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.StreamTokenizer;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Queue;
 
 
 public class Main {
 
 	public static void main(String[] args)  throws IOException {
-		
-			
-			long startTime;
-			long endTime;
-			long duration;
-			
-			long gb;
-			long bfs;
-			long print;
-			
-			startTime = System.nanoTime();
-
-			
 			
 			//System.setIn(new FileInputStream("in.txt"));
 			Graph g = GraphFromInputBuilder.build();
 			
-			endTime = System.nanoTime();
-			duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-			gb = duration; 
-			
-			
 			//System.out.println("V: " + g.getV() + " E: " + g.getE());
 			ErdosNumber en = new ErdosNumber(g, GraphFromInputBuilder.source);
-			startTime = System.nanoTime();
 			en.bfs();
 			
-			endTime = System.nanoTime();
-			duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+			en.printOutput();
 			
-			bfs=duration;
-			
-			startTime = System.nanoTime();
-			//en.printOutput();
-			endTime = System.nanoTime();
-			duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-			print = duration;
-			
-			System.out.println("Graph building duration: " + gb/1000000);
-			System.out.println("BFS duration: " + bfs/1000000);
-			System.out.println("OUT PRINT duration: " + duration/1000000);
-
 			//char[] buff = new char[20];
 			//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			//GraphFromInputBuilder.readLine(buff, br);
-
-		
-		
 	}
 }
 
@@ -80,7 +46,7 @@ class Graph {
 		this.E = 0;
 		
 		// Allocate memory for nodes
-		node = (LinkedList<Integer>[]) new LinkedList<?>[v];
+		node = new LinkedList[v];
 
 		for (int i = 0; i < V; i++) {
 			// Create an adjacency list for every node
@@ -117,77 +83,44 @@ class GraphFromInputBuilder{
 	
 	public static int source = 0;
 	
-	public static Graph build() throws IOException {
-		final int[] pow = new int[] { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 };
-		int x = 0;
-		int y = 0;
-		int len;
-		int index;
+	public static Graph build() {
 		
-		int charRead;
-		char[] buff = new char[20];
+		int v;
+		int e;
+		int s;
+		Graph g = null;
 		
+		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+        st.parseNumbers();
+        try{
+                st.nextToken();
+                v = (int) st.nval;
+        		g = new Graph(v);
+                st.nextToken();
+                e = (int) st.nval;
+                g.setE(e);
+                st.nextToken();
+                s = (int) st.nval;
+                source = s-1;
+                int i;
+                i = 0;
+                
+                int u;
+                int w;
+                
+                while(i < e)
+                {
+                        st.nextToken();
+                        u = (int) st.nval;
+                        st.nextToken();
+                        w = (int) st.nval;
+                        g.addEdge(u-1, w-1);
+                        i++;
+                }
+        } catch (IOException excep){
+                System.err.println("Something went wrong.");
+        }
 		
-		Graph g;
-
-		BufferedReader br;
-		br = new BufferedReader(new InputStreamReader(System.in));
-		
-		charRead = readLine(buff, br);
-		
-		len = charRead;
-		index = len - 1;
-		while (index > 0 && buff[index] != ' ') {
-			y += (buff[index] - '0') * pow[len - index - 1];
-			index--;
-		}
-
-		len = index;
-		index--;
-		while (index >= 0) {
-			x += (buff[index] - '0') * pow[len - index - 1];
-			index--;
-		}
-		
-		g = new Graph(x);
-		g.setE(y);
-
-		charRead = readLine(buff, br);
-		
-		x = 0;
-		len = charRead;
-		index = len -1;
-		while (index >= 0) {
-			x += (buff[index] - '0') * pow[len - index - 1];
-			index--;
-		}
-		
-		
-		source = x - 1;
-	
-		
-		while((charRead = readLine(buff, br)) != -1 ) {
-			
-			x = 0;
-			y = 0;
-			
-			len = charRead;
-			index = len - 1;
-			while (index > 0 && buff[index] != ' ') {
-				y += (buff[index] - '0') * pow[len - index - 1];
-				index--;
-			}
-
-			len = index;
-			index--;
-			while (index >= 0) {
-				x += (buff[index] - '0') * pow[len - index - 1];
-				index--;
-			}
-			
-			g.addEdge(x - 1, y - 1);
-		}
-		br.close();
 		return g;
 	}
 	
@@ -230,11 +163,10 @@ class ErdosNumber {
 		nodesAtDistance = new HashMap<Integer, Integer>();
 		nodeVisited = new boolean[g.getV()];
 		distanceTo = new int[g.getV()];
+		queue = new ArrayDeque<Integer>();
 	}
 	
-	public void bfs(Graph g, int source) {		
-		queue = new ArrayDeque<Integer>();
-		
+	public void bfs(Graph g, int source) {				
 		// TODO: initialise the distanceTo array with infinity?
 		// Projects specifications seem to say that all of the nodes
 		// have a finite distance. Not doing this saves Theta(V).
@@ -268,12 +200,42 @@ class ErdosNumber {
 	}
 	 
 	
-	public void printOutput() {
-		System.out.println(maxDist);
+	public void printOutput() throws IOException{
 		
-		for (int i = 1; i <= maxDist; i++) {
-			System.out.println(nodesAtDistance.get(i));
-		}
+		  BufferedWriter log = new BufferedWriter(new OutputStreamWriter(System.out));
+		  char out[] = new char[30];
+		  int j;
+		  int tmp;
+		  int i;
+
+		  // Make last character in the array '\n', so that all character sequences end in a newline
+		  out[out.length - 1] = '\n';
+		 
+		  // TODO: put in a separate function
+		   // add maxDist to the output
+		  j = 28;
+		  tmp = maxDist;
+		  while(tmp > 0) {
+			  out[j] = (char)((int)'0' + (tmp % 10));
+              tmp = tmp/10;
+              j--;
+		  }
+		  log.write(out, j+1, 29-j);
+		  
+		  // add nodes at all distances to the output
+		  i = 1;
+		  while(i <= maxDist) {			   tmp = nodesAtDistance.get(i);
+		      j = 28;
+		      while(tmp > 0)  {
+		          out[j] = (char)((int)'0' + (tmp % 10));
+		         tmp = tmp/10;
+		           j--;
+		      }
+		      log.write(out, j+1, 29-j);
+		      i++;
+		  }
+		  
+		  log.flush();
+		
 	}
-	
 }
