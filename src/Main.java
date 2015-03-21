@@ -66,7 +66,7 @@ class Graph {
 	 * @param v vertex to access
 	 * @return iterator over the adjacency list of vertex v
 	 */
-	public Iterable<Integer> getAdj(int v) {
+	public LinkedList<Integer> getAdj(int v) {
 		return node[v];
 	}
 	
@@ -151,8 +151,8 @@ class ErdosNumber {
 	private boolean nodeVisited[]; // true - node already visited; false - node not yet visited
 	private int distanceTo[]; // distance from node v (index) to the source node
 	private int source; // source node for bfs
-	private ArrayDeque<Integer> queue;
-	private HashMap<Integer, Integer> nodesAtDistance;
+	private int[] queue;
+	private int[] nodesAtDistance;
 	
 	private int maxDist; // max Erdos Number
 	private int currNode;
@@ -160,33 +160,41 @@ class ErdosNumber {
 	public ErdosNumber(Graph g, int source) {
 		this.g = g;
 		this.source = source;
-		nodesAtDistance = new HashMap<Integer, Integer>();
+		nodesAtDistance = new int[g.getV()];
 		nodeVisited = new boolean[g.getV()];
 		distanceTo = new int[g.getV()];
-		queue = new ArrayDeque<Integer>();
+		queue = new int[g.getV()];
 	}
 	
 	public void bfs(Graph g, int source) {				
 		// TODO: initialise the distanceTo array with infinity?
 		// Projects specifications seem to say that all of the nodes
 		// have a finite distance. Not doing this saves Theta(V).
+		LinkedList<Integer> adj;
+		int v;
+		
+		int front = 0;
+		int rear = 0;
+		
 		
 		distanceTo[source] = 0;
 		nodeVisited[source] = true;
-		queue.add(source);
+		
+		queue[front++] = source;
+		
 		maxDist = 0;
 		currNode = 0;
 		
-		while (!queue.isEmpty()) {
-			currNode = queue.remove();
-			if (nodesAtDistance.get(distanceTo[currNode]) == null)
-				nodesAtDistance.put(distanceTo[currNode], 1);
-			else
-				nodesAtDistance.put(distanceTo[currNode], nodesAtDistance.get(distanceTo[currNode]) + 1);
-			//numNodesAtDist[distanceTo[u]]++;
-			for (int v : g.getAdj(currNode)) {
+		while (front != rear) {
+			currNode = queue[rear++];
+
+			nodesAtDistance[distanceTo[currNode]]++;
+			adj = g.getAdj(currNode);
+			
+			while(!adj.isEmpty()) {
+				v = adj.remove();
 				if (!nodeVisited[v]) {
-					queue.add(v);
+					queue[front++] = v;
 					nodeVisited[v] = true;
 					distanceTo[v] = distanceTo[currNode] + 1;
 				}
@@ -224,7 +232,7 @@ class ErdosNumber {
 		  
 		  // add nodes at all distances to the output
 		  i = 1;
-		  while(i <= maxDist) {			   tmp = nodesAtDistance.get(i);
+		  while(i <= maxDist) {			   tmp = nodesAtDistance[i];
 		      j = 28;
 		      while(tmp > 0)  {
 		          out[j] = (char)((int)'0' + (tmp % 10));
